@@ -362,11 +362,12 @@ def AGDR(fx, gradf, parameter):
         fval_next = fx(x_next)
         
         if fval < fval_next:
-            x_next, y_next, fval_next = x, y, fval
-            t = 1
-        else:
-            t_next = (1 + np.sqrt(1 + 4 * t**2)) / 2
-            y_next = x_next + (t - 1) * (x_next - x) / t_next
+            y, t = x, 1
+            x_next = y - alpha * gradf(y)
+            fval_next = fx(x_next)
+
+        t_next = (1 + np.sqrt(1 + 4 * t**2)) / 2    
+        y_next = x_next + (t - 1) * (x_next - x) / t_next
 
         # Compute error and save data to be plotted later on.
         info['itertime'][iter] = time.time() - tic
@@ -620,12 +621,10 @@ def SAG(fx, gradfsto, parameter):
         # Use the notation x_next for x_{k+1}, and x for x_{k}, and similar for other variables.
         #### YOUR CODE GOES HERE
         i_k = randint(n)
-        v_next = np.zeros_like(v)
+        v_next = v
         for i in range(n):
             if i == i_k:
                 v_next[i] = gradfsto(x, i)
-            else:
-                v_next[i] = v[i]
         
         x_next = x - alpha * v_next.sum(axis=0)
 
@@ -800,7 +799,7 @@ def ista(fx, gx, gradf, proxg, params):
 
         # Update the iterate
         #### YOUR CODE GOES HERE
-        x_next = proxg(x_k - alpha * gradf(x_k), lmbd)
+        x_next = proxg(x_k - alpha * gradf(x_k), alpha * lmbd)
 
         # Compute error and save data to be plotted later on.
         info['itertime'][k] = time.time() - tic
@@ -855,9 +854,8 @@ def fista(fx, gx, gradf, proxg, params):
 
         # Update iterate
         #### YOUR CODE GOES HERE
-        x_next = proxg(y_k - alpha * gradf(y_k), lmbd)
+        x_next = proxg(y_k - alpha * gradf(y_k), alpha * lmbd)
         t_next = (1 + np.sqrt(4 * t_k**2 + 1)) / 2
-        y_next = x_next + (t_k - 1) * (x_next - x_k) / t_next
 
         # Compute error and save data to be plotted later on.
         info['itertime'][k] = time.time() - tic
@@ -866,9 +864,12 @@ def fista(fx, gx, gradf, proxg, params):
             print_progress(k, maxit, info['fx'][k], fx(x_k), gx(x_k))
 
         if params['restart_fista'] and gradient_scheme_restart_condition(x_k, x_next, y_k):
-                t_k = 1
-        else:
-            x_k, t_k, y_k = x_next, t_next, y_next
+            t_k = t_next = 1
+            y_k = x_k
+            x_next = proxg(y_k - alpha * gradf(y_k), alpha * lmbd)
+
+        y_next = x_next + (t_k - 1) * (x_next - x_k) / t_next
+        x_k, t_k, y_k = x_next, t_next, y_next
 
     print_end_message(method_name, time.time() - tic_start)
     return x_k, info
@@ -929,7 +930,7 @@ def prox_sg(fx, gx, gradfsto, proxg, params):
         X_acc += gamma_k * x_k
         X_avg = X_acc / gamma_acc
         i = randint(n)
-        x_next = proxg(x_k - gamma_k * gradfsto(x_k, i), lmbd)
+        x_next = proxg(x_k - gamma_k * gradfsto(x_k, i), gamma_k * lmbd)
 
         # Compute error and save data to be plotted later on.
         info['itertime'][k] = time.time() - tic

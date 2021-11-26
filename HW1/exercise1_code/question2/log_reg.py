@@ -69,8 +69,6 @@ def main():
     # prox config
     f_star_l1 = 0.675361
     f_star_l2 = 0.278635
-    # lmbd_l1 = 1e-5 # 0.3 is too big
-    # lmbd_l2 = 1e-5
     lmbd_l1 = .3
     lmbd_l2 = .1
     parameter['iter_print'] = 100
