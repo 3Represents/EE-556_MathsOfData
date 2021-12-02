@@ -622,9 +622,7 @@ def SAG(fx, gradfsto, parameter):
         #### YOUR CODE GOES HERE
         i_k = randint(n)
         v_next = v
-        for i in range(n):
-            if i == i_k:
-                v_next[i] = gradfsto(x, i)
+        v_next[i_k] = gradfsto(x, i_k)
         
         x_next = x - alpha * v_next.sum(axis=0)
 

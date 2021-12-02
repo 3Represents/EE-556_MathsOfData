@@ -59,7 +59,7 @@ class RMSPropOptimizer(optimizer):
             self.r = [torch.zeros(p.size()) for p in self.parameters]
 
         for i, p in enumerate(self.parameters):
-            self.r[i] = self.tau * self.r[i] + (1 - self.tau) * p.grad * p.grad
+            self.r[i] = self.tau * self.r[i] + (1 - self.tau) * p.grad ** 2
             p.data -= self.learning_rate / (self.delta + torch.sqrt(self.r[i])) * p.grad
 
 
@@ -73,6 +73,7 @@ class AMSgradOptimizer(optimizer):
         self.iteration = None
         self.m1 = None
         self.m2 = None
+        self.m2_max = None
 
     def step(self):
 
@@ -82,10 +83,17 @@ class AMSgradOptimizer(optimizer):
             self.m2 = [torch.zeros(p.grad.size()) for p in self.parameters]
         if self.iteration is None:
             self.iteration = 1
+        if self.m2_max is None:
+            self.m2_max = [torch.zeros(p.grad.size()) for p in self.parameters]
 
         for i, p in enumerate(self.parameters):
-            ## TODO
-            raise NotImplementedError('You should write your code HERE')
+            self.m1[i] = self.beta1 * self.m1[i] + (1 - self.beta1) * p.grad
+            self.m2[i] = self.beta2 * self.m2[i] + (1 - self.beta2) * p.grad ** 2
+            # Iteration starts at 1 instead of 0, (t+1) is not needed
+            m1_hat = self.m1[i] / (1 - self.beta1 ** self.iteration)
+            m2_hat = self.m2[i] / (1 - self.beta2 ** self.iteration)
+            self.m2_max[i] = torch.maximum(self.m2_max[i], m2_hat)
+            p.data -= self.learning_rate * m1_hat / (self.delta + torch.sqrt(self.m2_max[i]))
 
         self.iteration = self.iteration+1
 
