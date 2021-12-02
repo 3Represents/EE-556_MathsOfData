@@ -32,8 +32,8 @@ def main(args):
 
     # Create optimizers and initialize adam optimizers with betas=(0.0,0.9), one for generator and dual each
     # For API, see our pytorch tutorial or https://pytorch.org/docs/stable/optim.html
-    f_optim = NotImplemented
-    g_optim = NotImplemented
+    f_optim = Adam(f.parameters(), lr=args.lr, betas=(0.0, 0.9))
+    g_optim = Adam(g.parameters(), lr=args.lr, betas=(0.0, 0.9))
 
     # Initialize trainer
     trainer = GanTrainer(

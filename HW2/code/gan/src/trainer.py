@@ -76,9 +76,7 @@ class GanTrainer():
 
         Calculate an estimate of the expectation via the empirical mean on a sample.
         """
-        # TODO
-        raise NotImplementedError("Your W1 estimate here")
-        return W1
+        return (f(data_sample) - f(g(noise_sample))).mean()
 
     def alternating_update(self, f, g, f_optim, g_optim,f_ratio=1):
         """
@@ -92,14 +90,22 @@ class GanTrainer():
         """
         noise = self.noise.sample([self.batch_size])
         real = self.data.sample([self.batch_size])
-        if self.step % f_ratio==0:
+        if self.step % f_ratio == 0: # Generator
             f.eval()
             g.train()
-            raise NotImplementedError("Your generator training code here")
-        else:
+            g_optim.zero_grad()
+            loss = self.objective(f, g, real, noise)
+            loss.backward()
+            g_optim.step()
+        else: # Dual
             f.train()
             g.eval()
-            raise NotImplementedError("Your dual training code here")
+            f_optim.zero_grad()
+            loss = -self.objective(f, g, real, noise)
+            loss.backward()
+            f_optim.step()
+            f.weight_clipping()
+            f.enforce_lipschitz()
 
     def alternating(self, n_iter, f, g, f_optim, g_optim, n_checkpoints, f_ratio=1):
         """
