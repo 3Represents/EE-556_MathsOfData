@@ -6,11 +6,14 @@ from time import time
 
 
 def proj_nuc(Z, kappa):
-    #proj_nuc: This function implements the projection onto nuclear norm ball.
-    
-    # Implement projection operator here!
-    
-    return 
+    # proj_nuc: This function implements the projection onto nuclear norm ball.
+    u, s, vt = np.linalg.svd(Z, full_matrices=False)
+    if np.linalg.norm(s, ord=1) <= kappa:
+        # Constraint is already satisfied
+        return Z
+    else:
+        s_l1 = proj_L1(s, kappa)
+        return u * s_l1 @ vt
 
 
 data = scipy.io.loadmat('./dataset/ml-100k/ub_base')  # load 100k dataset

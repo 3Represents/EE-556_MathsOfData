@@ -5,11 +5,9 @@ from scipy.sparse import linalg
 from time import time
 
 def lmo_nuc(Z, kappa):
-    #lmo_nuc: This function implements the lmo for the nuclear norm ball constraint. .
-    
-    # Implement lmo operator here!
-    
-    return 
+    # lmo_nuc: This function implements the lmo for the nuclear norm ball constraint.
+    u, _, vt = linalg.svds(Z, k=1)
+    return -kappa * u @ vt
 
 data = scipy.io.loadmat('./dataset/ml-100k/ub_base')  # load 100k dataset
 
