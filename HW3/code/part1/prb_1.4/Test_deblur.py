@@ -2,9 +2,9 @@ import numpy as np
 from scipy.fftpack import fft2, fftshift, ifft2
 import matplotlib.pyplot as plt
 import scipy.sparse as sps
-from scipy.misc import imread
+# from scipy.misc import imread
 #N.B. This can be deprecated depending on the python version. Use cv2 in this case
-#import cv2 # if imread does not work for you.
+import cv2 # if imread does not work for you.
 
 # N.B. You can install cv2 by calling 'conda install opencv' or 'pip install opencv' in the terminal
 # If you have incompatibilities with hdf5, you can uninstall it by command line 'conda remove hdf5' or 
@@ -26,8 +26,8 @@ real2comp = lambda x: x[0:x.shape[0]//2] + 1j*x[x.shape[0]//2:]
 comp2real = lambda x: np.append(x.real, x.imag)
 
 # Load Data
-x = imread('blurredplate.jpg',flatten=True,mode='F')
-#x = cv2.imread('blurredplate.jpg' , cv2.IMREAD_GRAYSCALE) #If imread does not work for you
+# x = imread('blurredplate.jpg',flatten=True,mode='F')
+x = cv2.imread('blurredplate.jpg' , cv2.IMREAD_GRAYSCALE) # If imread does not work for you
 
 x = x[60:188,40:296]
 x = x/np.linalg.norm(x,ord=np.inf)
@@ -117,8 +117,8 @@ def frank_wolfe(Aoper, AToper, b, n1, n2, kappa, maxit, plotFunc):
 
         # Form the residual and fix the operator to be used in svds.
         res_cur = AX_t - b
-        ATop1 = lambda w: AToper["matvec"](???,w)
-        ATop2 = lambda w: AToper["rmatvec"](???,w)
+        ATop1 = lambda w: AToper["matvec"](res_cur, w)
+        ATop2 = lambda w: AToper["rmatvec"](res_cur, w)
         svdsArg = LinearOperator((n2,n1), matvec=ATop1, rmatvec=ATop2)
         topLe_vec, singVal, topRe_vec = svds(svdsArg, k=1, tol=1e-4, which='LM')
 
@@ -126,16 +126,16 @@ def frank_wolfe(Aoper, AToper, b, n1, n2, kappa, maxit, plotFunc):
         AXsharp_t = Aoper(topLe_vec, -kappa, topRe_vec.T)
         
         # Step size
-        weight = ???
+        weight = 2 / (iteration + 2)
         
         # Update A*X
         AX_t = (1.0-weight)*AX_t + weight*(AXsharp_t)
         
         # Update X
-        X = ???
+        X = (1.0 - weight) * X - weight * kappa * np.outer(topLe_vec, topRe_vec)
         
         # Show the reconstruction (at every 10 iteration) 
-        if (float(iteration/10) == float(iteration)/10):
+        if iteration % 10 == 0:
             U,S,V = np.linalg.svd(X,full_matrices=0,compute_uv=1)
             plotFunc(U[:,0])
 
@@ -145,10 +145,18 @@ def frank_wolfe(Aoper, AToper, b, n1, n2, kappa, maxit, plotFunc):
 
 # Run Frank-Wolfe's method
 MaxIters = 200
-kappa = 1000
+kappa = 50
 plotF = lambda m: plot_func(m, Cop, x)
 xFW = frank_wolfe(Aoper, AToper, b, kernelsize, imsize, kappa, MaxIters, plotF)
 
+# Save the deconvolution result
+U,_,_ = np.linalg.svd(xFW,full_matrices=0,compute_uv=1)
+xEst = -Cop(U[:,0])
+xEst = xEst - min(xEst.flatten())
+xEst = xEst/max(xEst.flatten())
+plt.axis('off')
+plt.imshow(xEst, cmap='gray')
+plt.savefig('./reconstructed.jpg', bbox_inches='tight')
 
 # NOTE: This experiment is based on the theory and the codes publised in
 #'Blind Deconvolution using Convex Programming' by A.Ahmed, B.Recht and J.Romberg.
