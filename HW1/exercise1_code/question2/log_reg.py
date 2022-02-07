@@ -29,12 +29,12 @@ def main():
     methods['GDstr'] = True
     methods['AGD'] = True
     methods['AGDstr'] = True
-    # methods['LSGD'] = False # Not implemented
-    # methods['LSAGD'] = False # Not implemented
+    methods['LSGD'] = True
+    methods['LSAGD'] = True
     methods['AGDR'] = True
-    # methods['LSAGDR'] = False # Not implemented
+    methods['LSAGDR'] = True
     methods['AdaGrad'] = True
-    # methods['ADAM'] = False # Not implemented
+    methods['ADAM'] = True
     methods['SGD'] = True
     methods['SAG'] = True
     methods['SVR'] = True
