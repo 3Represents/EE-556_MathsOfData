@@ -73,7 +73,6 @@ def GDstr(fx, gradf, parameter) :
     :param parameter:
     :return: x, info
     """
-
     method_name = 'Gradient Descent with strong convexity'
     print_start_message(method_name)
     tic_start = time.time()
@@ -507,7 +506,6 @@ def ADAM(fx, gradf, parameter):
     :param parameter:
     :return:
     """
-
     method_name = 'ADAM'
     print_start_message(method_name)
     tic_start = time.time()
@@ -762,7 +760,6 @@ def ista(fx, gx, gradf, proxg, params):
     :param parameter:
     :return:
     """
-
     method_name = 'ISTA'
     print_start_message(method_name)
     tic_start = time.time()
@@ -807,7 +804,6 @@ def fista(fx, gx, gradf, proxg, params):
     :param parameter:
     :return:
     """
-    
     if params['restart_fista']:
         method_name = 'FISTAR'
     else:
@@ -870,7 +866,6 @@ def prox_sg(fx, gx, gradfsto, proxg, params):
     :param parameter:
     :return:
     """
-    
     method_name = 'PROXSG'
     print_start_message(method_name)
 
